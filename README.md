@@ -1,53 +1,59 @@
+# Autel UPG Extraction Toolkit
 
-# Autel UPG Recursive Extraction Pipeline
+A complete toolkit for parsing and recursively extracting files from Autel UPG firmware packages, including archive detection and validation.
 
-This bundle includes all scripts, summaries, and instructions to fully replicate the extraction and recursive unpacking of Autel firmware UPG packages.
+## 📂 Included Tools
 
-## 📂 Contents
-- `autel_upg_extractor_corrected.py` : Top-level UPG file extractor
-- `autel_upg_extractor_recursive_final.py` : Recursive extractor for files found within extracted data
-- `upg_archive_scanner.py` : Scanner for embedded archives (ZIP, LZMA, TAR, YAFFS2)
-- `replicate_upg_recursive_pipeline.sh` : Shell script to run the full pipeline step-by-step
-- Summary CSV files for each stage
-- Extracted folders: `top_level_extracted/`, `extracted_recursive/`, etc.
+- `autel_upg_extractor_combined_fixed.py`: Combined top-level and recursive extractor (latest version)
+- `upg_archive_scanner.py`: Scanner for embedded archive formats (ZIP, LZMA, TAR, YAFFS2 heuristic)
+- `replicate_upg_pipeline.sh`: Shell pipeline script to automate the full process
+- `requirements.txt`, `pyproject.toml`: Easy installation and Python packaging
+- `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`: Project documentation and guidelines
 
-## 📐 Format Layout Diagram
-Below is the structure of the UPG file format and how it's parsed:
+## 📐 UPG Format Layout
+
+The structure of Autel UPG firmware files is illustrated below:
 
 ![UPG Format Layout](upg_format_layout_diagram.png)
 
 ## 🛠 Requirements
-- Python 3.x
-- `pandas` (install with `pip install pandas`)
 
-## ▶ Usage
+- Python 3.6+
+- pandas
 
-### Step 1: Extract top-level UPG content
+Install required packages:
 ```bash
-python3 autel_upg_extractor_corrected.py -i Model-C_FW_V2.7.25.bin -o top_level_extracted -s top_level_extracted_summary.csv
+pip install -r requirements.txt
 ```
 
-### Step 2: Recursively scan extracted `.bin` files
+## ▶ Usage Examples
+
+### Run extractor manually
 ```bash
-python3 autel_upg_extractor_recursive_final.py -i top_level_extracted/at_Model-C_FW_V2.7.25.bin -o extracted_recursive -s recursive_subextracted_summary.csv
+python3 autel_upg_extractor_combined_fixed.py -i Model-C_FW_V2.7.25.bin -o extracted_upg -s summary.csv
 ```
 
-### Step 3: Deeper recursive scan (optional)
+### Run archive scan
 ```bash
-python3 autel_upg_extractor_recursive_final.py -i extracted_recursive/some_nested_file.bin -o deeper_recursive -s recursive_deep_subextracted_summary.csv
+python3 upg_archive_scanner.py -i extracted_upg -o archive_output
 ```
 
-### Step 4: Scan for embedded archives
+### Run full pipeline
 ```bash
-python3 upg_archive_scanner.py -i extracted_recursive/ -o archive_scanned_output/
+chmod +x replicate_upg_pipeline.sh
+./replicate_upg_pipeline.sh Model-C_FW_V2.7.25.bin
 ```
 
-### Or use the full automated pipeline:
-```bash
-chmod +x replicate_upg_recursive_pipeline.sh
-./replicate_upg_recursive_pipeline.sh Model-C_FW_V2.7.25.bin
-```
+## 🔁 Recursive Extraction Support
+
+Files extracted from `<filecontent>` blocks are also scanned for nested `<filetransfer>` structures automatically.
 
 ## 💡 Notes
-- The scripts use hex-pattern matching for custom tags like `<filetransfer>`, `<fileinfo>`, and `<filecontent>`.
-- You can extend the recursive scanning further by repeating steps for newly discovered `.bin` or `.upg` files.
+
+- Archive detection is based on magic byte matching.
+- YAFFS2 support is limited to heuristic flagging.
+- All extracted data is saved to structured output directories with full metadata logs.
+
+## 📄 License
+
+This project is licensed under the MIT License.

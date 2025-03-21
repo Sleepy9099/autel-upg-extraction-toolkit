@@ -20,9 +20,9 @@ def parse_entries(data, output_folder, summary_records=None, recursion_level=0, 
     if summary_records is None:
         summary_records = []
 
-    filetransfer = b'\x22\x3C\x66\x69\x6C\65\74\72\61\6E\73\66\65\72\3E\x22'.decode('unicode_escape').encode()
-    fileinfo = b'\x22\x3C\x66\x69\x6C\65\69\6E\66\6F\3E\x22'.decode('unicode_escape').encode()
-    filecontent = b'\x22\x3C\x66\x69\x6C\65\63\6F\6E\74\65\6E\74\3E\x22'.decode('unicode_escape').encode()
+    filetransfer = b'\x22\x3C\x66\x69\x6C\65\74\72\61\6E\73\66\65\72\3E\x22'
+    fileinfo = b'\x22\x3C\x66\x69\x6C\65\69\6E\66\6F\3E\x22'
+    filecontent = b'\x22\x3C\x66\69\x6C\65\63\6F\6E\74\65\6E\74\3E\x22'
 
     entry_count = 0
     position = 0
@@ -62,11 +62,10 @@ def parse_entries(data, output_folder, summary_records=None, recursion_level=0, 
         file_data = data[position+8:position+8+content_field_size]
         position += 8 + content_field_size
 
-        # Save extracted file
         subfolder = os.path.join(output_folder, parent_path.replace('/', '_'))
-        mkdir_p(subfolder)
+        os.makedirs(subfolder, exist_ok=True)
         save_path = os.path.join(subfolder, filename)
-        with safe_open_w(save_path) as out_file:
+        with open(save_path, 'wb') as out_file:
             out_file.write(file_data)
 
         md5_hash = hashlib.md5(file_data).hexdigest()
@@ -83,7 +82,6 @@ def parse_entries(data, output_folder, summary_records=None, recursion_level=0, 
             "Saved Path": save_path
         })
 
-        # 🔁 Recursive scan inside this file's content
         if filetransfer in file_data:
             inner_output = os.path.join(subfolder, f"{filename}_nested")
             parse_entries(file_data, inner_output, summary_records, recursion_level + 1, parent_path + '/' + filename)
@@ -93,10 +91,10 @@ def parse_entries(data, output_folder, summary_records=None, recursion_level=0, 
     return summary_records
 
 def main():
-    parser = argparse.ArgumentParser(description="Autel UPG extractor with corrected recursion on filecontent data")
+    parser = argparse.ArgumentParser(description="Autel UPG extractor with combined top-level and recursive extraction (fixed)")
     parser.add_argument("-i", "--input", required=True, help="Input firmware binary file")
     parser.add_argument("-o", "--output", required=True, help="Output folder for extracted files")
-    parser.add_argument("-s", "--summary", default="extracted_upg_recursive_summary.csv", help="Summary CSV output path")
+    parser.add_argument("-s", "--summary", default="extracted_upg_summary.csv", help="Summary CSV output path")
     args = parser.parse_args()
 
     with open(args.input, "rb") as f:
@@ -105,7 +103,7 @@ def main():
     summary_records = parse_entries(firmware_data, args.output)
     df = pd.DataFrame(summary_records)
     df.to_csv(args.summary, index=False)
-    print(f"[✓] Recursive Extraction complete. {len(summary_records)} entries extracted.")
+    print(f"[✓] Extraction complete. {len(summary_records)} entries extracted.")
     print(f"[✓] Summary saved to: {args.summary}")
 
 if __name__ == "__main__":

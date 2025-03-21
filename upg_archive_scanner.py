@@ -47,7 +47,6 @@ def scan_and_extract_archives(input_dir, output_dir):
 
                 elif b'Yaffs' in header or b'yaffs2' in header.lower():
                     detected = "YAFFS2 (heuristic match)"
-                    # YAFFS2 not natively supported in Python; flag only
                     extracted = False
 
             except Exception as e:

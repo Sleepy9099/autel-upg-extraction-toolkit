@@ -1,19 +1,14 @@
 [project]
-name = "autel-upg-extractor"
-version = "1.0.0"
-description = "A toolkit for extracting and recursively unpacking Autel UPG firmware update packages."
+name = "autel-upg-extraction-toolkit"
+version = "1.1.0"
+description = "Toolkit for parsing and recursively extracting Autel UPG firmware packages."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
     { name = "Your Name", email = "you@example.com" }
 ]
-dependencies = [
-    "pandas"
-]
+dependencies = ["pandas"]
 requires-python = ">=3.6"
-
-[tool.setuptools]
-packages = []
 
 [build-system]
 requires = ["setuptools", "wheel"]
