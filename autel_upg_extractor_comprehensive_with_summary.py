@@ -38,6 +38,20 @@ import zipfile
 import gzip
 import lzma
 
+def generate_summary_report(output_dir, summary_records):
+    logging.info("\n====== FINAL EXTRACTION SUMMARY ======")
+    for record in summary_records:
+        logging.info(f"[SUMMARY] Level {record['Recursion Level']} | Parent: {record['Parent']} | "
+                     f"File: {record['Filename']} | Size: {record['File Size']} bytes | "
+                     f"MD5: {record['MD5 Hash']} | Saved: {record['Saved Path']}")
+    logging.info("\n====== FILE STRUCTURE OVERVIEW ======")
+    for root, dirs, files in os.walk(output_dir):
+        level = root.replace(output_dir, '').count(os.sep)
+        indent = '  ' * level
+        logging.info(f"{indent}{os.path.basename(root)}/")
+        subindent = '  ' * (level + 1)
+        for f in files:
+            logging.info(f"{subindent}{f}")
 
 
 def detect_and_extract_compression(data, output_dir, base_name):
@@ -275,6 +289,8 @@ def run_upg_and_parse_uboot_structs_nested(data, output_dir):
 
             offset += struct_size
             index += 1
+
+    generate_summary_report(output_dir, upg_summary)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract UPG contents and scan for nested uImage headers")
